@@ -37,6 +37,11 @@ class GameState(Protocol):
         """Return a new state after applying the move."""
         ...
 
+    @property
+    def action_space_size(self) -> int:
+        """Return the total number of possible actions."""
+        ...
+
     def to_tensor_planes(self) -> torch.Tensor:
         """Convert state to tensor planes for neural network input."""
         ...

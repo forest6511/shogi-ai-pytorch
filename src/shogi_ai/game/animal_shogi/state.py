@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 import torch
 
 from shogi_ai.game.animal_shogi.board import Board
+from shogi_ai.game.animal_shogi.moves import ACTION_SPACE
 from shogi_ai.game.animal_shogi.moves import apply_move as _apply_move
 from shogi_ai.game.animal_shogi.moves import legal_moves as _legal_moves
 from shogi_ai.game.animal_shogi.types import (
@@ -31,6 +32,10 @@ class AnimalShogiState:
     board: Board = field(default_factory=Board)
     _current_player: Player = Player.SENTE
     _move_count: int = 0
+
+    @property
+    def action_space_size(self) -> int:
+        return ACTION_SPACE
 
     @property
     def current_player(self) -> int:
