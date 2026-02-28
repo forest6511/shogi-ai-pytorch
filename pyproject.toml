@@ -4,7 +4,7 @@ version = "0.2.0"
 description = "Claude Codeで作る将棋AI — PyTorch×強化学習×バイブコーディング実践入門"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 authors = [{ name = "Yosuke Morikawa" }]
 dependencies = [
     "torch>=2.10",
@@ -33,7 +33,7 @@ pythonpath = ["src"]
 [tool.ruff]
 src = ["src", "tests"]
 line-length = 99
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]

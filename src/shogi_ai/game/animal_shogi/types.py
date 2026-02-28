@@ -15,7 +15,7 @@ class Player(IntEnum):
     GOTE = 1  # 後手 (second player, moves downward)
 
     @property
-    def opponent(self) -> "Player":
+    def opponent(self) -> Player:
         return Player(1 - self.value)
 
 
