@@ -7,7 +7,7 @@ license = "MIT"
 requires-python = ">=3.13"
 authors = [{ name = "Yosuke Morikawa" }]
 dependencies = [
-    "torch>=2.6",
+    "torch>=2.10",
 ]
 
 [project.scripts]
