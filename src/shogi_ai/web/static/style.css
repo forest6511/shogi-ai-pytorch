@@ -54,6 +54,7 @@ button:hover {
     gap: 10px;
 }
 
+/* Hand (captured pieces) area */
 .hand {
     padding: 8px 16px;
     background: #16213e;
@@ -62,6 +63,12 @@ button:hover {
     text-align: center;
     width: 100%;
     max-width: 500px;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.hand.active-turn {
+    border-color: #4caf50;
 }
 
 .hand-label {
@@ -87,12 +94,20 @@ button:hover {
     border-radius: 4px;
     font-size: 18px;
     cursor: pointer;
+    border: 2px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
 }
 
 .hand-piece:hover {
     background: #e94560;
 }
 
+.hand-piece.selected {
+    background: #2e7d32;
+    border-color: #90ee90;
+}
+
+/* Board */
 .board {
     display: grid;
     gap: 1px;
@@ -120,6 +135,7 @@ button:hover {
     cursor: pointer;
     position: relative;
     user-select: none;
+    transition: background 0.15s;
 }
 
 .board.full .cell {
@@ -130,12 +146,35 @@ button:hover {
     background: #f0d9a0;
 }
 
-.cell.selected {
-    background: #90ee90;
+/* AI's last move highlight */
+.cell.last-move-from {
+    background: #bbdefb;
+}
+.cell.last-move-to {
+    background: #90caf9;
+    box-shadow: inset 0 0 0 3px #1976d2;
 }
 
+/* Selected piece */
+.cell.selected {
+    background: #90ee90;
+    box-shadow: inset 0 0 0 3px #2e7d32;
+}
+
+/* Legal move target */
 .cell.legal-target {
     background: #ffeb3b;
+    cursor: pointer;
+}
+
+.cell.legal-target::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    pointer-events: none;
 }
 
 .cell .piece {
@@ -150,23 +189,64 @@ button:hover {
     transform: rotate(180deg);
 }
 
+/* Full shogi: koma (piece) shape */
+.board.full .cell .piece {
+    width: 38px;
+    height: 42px;
+    background: linear-gradient(180deg, #f7e8c8 0%, #e0c89a 100%);
+    clip-path: polygon(50% 2%, 92% 20%, 86% 98%, 14% 98%, 8% 20%);
+    color: #1a0a00;
+    font-weight: bold;
+    font-size: 18px;
+    filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4));
+    line-height: 1;
+    padding-top: 4px;
+}
+
+/* Promoted pieces: red text */
+.board.full .cell .piece.promoted {
+    color: #b71c1c;
+}
+
+/* Status bar */
 .status {
     text-align: center;
     font-size: 18px;
     padding: 10px;
     min-height: 40px;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    border: 1px solid transparent;
+}
+
+.status.your-turn {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4caf50;
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.status.ai-turn {
+    background: rgba(255, 152, 0, 0.2);
+    border-color: #ff9800;
+    color: #ff9800;
 }
 
 .status.win {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4caf50;
     color: #4caf50;
     font-weight: bold;
 }
 
 .status.lose {
+    background: rgba(233, 69, 96, 0.2);
+    border-color: #e94560;
     color: #e94560;
     font-weight: bold;
 }
 
+/* Move history */
 .move-list {
     margin-top: 20px;
     padding: 10px;
