@@ -15,8 +15,8 @@ shogi-ai = "shogi_ai.cli:main"
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0",
-    "ruff>=0.9",
+    "pytest>=9.0",
+    "ruff>=0.15",
 ]
 
 [build-system]
