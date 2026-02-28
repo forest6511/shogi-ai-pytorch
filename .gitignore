@@ -39,3 +39,8 @@ htmlcov/
 
 # Ruff
 .ruff_cache/
+
+# Claude Code (dev-only config)
+.claude/rules/
+.claude/skills/
+.claude/settings.json

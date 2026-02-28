@@ -29,6 +29,7 @@ packages = ["src/shogi_ai"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = ["slow: marks tests as slow (training, GPU, multi-game)"]
 
 [tool.ruff]
 src = ["src", "tests"]
