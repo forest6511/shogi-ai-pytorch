@@ -1,6 +1,6 @@
 [project]
 name = "shogi-ai"
-version = "0.2.0"
+version = "1.0.0"
 description = "Claude Codeで作る将棋AI — PyTorch×強化学習×バイブコーディング実践入門"
 readme = "README.md"
 license = "MIT"
@@ -8,6 +8,8 @@ requires-python = ">=3.14"
 authors = [{ name = "Yosuke Morikawa" }]
 dependencies = [
     "torch>=2.10",
+    "fastapi>=0.115",
+    "uvicorn>=0.34",
 ]
 
 [project.scripts]
@@ -17,6 +19,7 @@ shogi-ai = "shogi_ai.cli:main"
 dev = [
     "pytest>=9.0",
     "ruff>=0.15",
+    "httpx>=0.28",
 ]
 
 [build-system]

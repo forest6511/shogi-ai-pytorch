@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>将棋AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>将棋AI対局</h1>
+
+        <div class="controls">
+            <select id="game-type">
+                <option value="animal">どうぶつしょうぎ (3×4)</option>
+                <option value="full">本将棋 (9×9)</option>
+            </select>
+            <select id="ai-type">
+                <option value="minimax">Minimax AI</option>
+                <option value="random">Random AI</option>
+                <option value="mcts">MCTS AI (NN)</option>
+            </select>
+            <button id="new-game-btn">新規対局</button>
+        </div>
+
+        <div class="game-area">
+            <div class="hand" id="gote-hand">
+                <div class="hand-label">後手 (AI) 持駒</div>
+                <div class="hand-pieces">-</div>
+            </div>
+
+            <div id="board" class="board animal"></div>
+
+            <div class="hand" id="sente-hand">
+                <div class="hand-label">先手 (あなた) 持駒</div>
+                <div class="hand-pieces">-</div>
+            </div>
+        </div>
+
+        <div id="status" class="status">新規対局を開始してください</div>
+
+        <div id="legal-moves" style="display:flex;flex-wrap:wrap;justify-content:center;margin-top:10px;"></div>
+
+        <div id="move-list" class="move-list"></div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
