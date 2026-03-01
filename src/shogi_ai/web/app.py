@@ -13,6 +13,7 @@ FastAPI を使った将棋AI Web アプリケーション。
 from __future__ import annotations
 
 import uuid
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -63,7 +64,7 @@ class MoveRequest(BaseModel):
 def _get_ai_fn(
     ai_type: str,
     game_type: str,
-) -> Any:
+) -> Callable[[GameState], int]:
     """Get the AI move function based on type.
 
     AI種別に応じた手選択関数を返す。
