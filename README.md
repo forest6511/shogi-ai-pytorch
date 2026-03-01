@@ -68,6 +68,26 @@ git diff v0.2.0..v0.3.0 --stat
 | `/debug` | エラー発生時 | ruff/mypy/pytest/MPS/将棋ルールのエラー診断 |
 | `/test-e2e` | Ch.15 完了後 | Playwright MCPでWeb UIを実対局テスト |
 
+## スクリーンショット
+
+### どうぶつしょうぎ（3×4）の初期配置と駒の動き
+
+![どうぶつしょうぎの初期配置と駒の動き](images/animal-shogi-board.png)
+
+5種類の駒（ライオン・きりん・ぞう・ひよこ・にわとり）で遊ぶ入門用ミニ将棋。本書ではまずこの小さな盤面でAIの基礎を構築します。
+
+### Web UI — 対局画面
+
+![Web UI 対局画面](images/web-ui-play.png)
+
+ブラウザ上でAIと対局できるWeb UI。どうぶつしょうぎ・本将棋の両方に対応しています。
+
+### Web UI — 自己対局訓練
+
+![Web UI 訓練画面](images/web-ui-training.png)
+
+AlphaZeroアルゴリズムによる自己対局訓練をブラウザから実行・モニタリングできます。
+
 ## ライセンス
 
 MIT License
