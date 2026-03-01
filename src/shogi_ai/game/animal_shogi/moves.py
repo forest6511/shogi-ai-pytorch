@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from shogi_ai.game.animal_shogi.board import Board, Piece
 from shogi_ai.game.animal_shogi.types import (
     COLS,
@@ -25,6 +27,9 @@ from shogi_ai.game.animal_shogi.types import (
 )
 
 ACTION_SPACE = 180  # どうぶつしょうぎの全行動数
+# 盤上の手の総数（from_idx × to_idx: 12 × 12 = 144）
+# DROP_OFFSET 以降の値が打ち駒手（144〜179）に対応する
+DROP_OFFSET: Final[int] = ROWS * COLS * ROWS * COLS  # = 144
 
 
 def encode_board_move(from_idx: int, to_idx: int) -> int:
@@ -40,10 +45,10 @@ def encode_drop_move(piece_type: PieceType, to_idx: int) -> int:
     """Encode a drop move as an integer.
 
     持ち駒打ちを整数にエンコードする。
-    144（盤上の手の最大値+1）以降の値を使う。
+    DROP_OFFSET（盤上の手の最大値+1）以降の値を使う。
     """
     pt_index = HAND_PIECE_TYPES.index(piece_type)
-    return 144 + pt_index * 12 + to_idx
+    return DROP_OFFSET + pt_index * 12 + to_idx
 
 
 def decode_move(move: int) -> dict:
@@ -52,7 +57,7 @@ def decode_move(move: int) -> dict:
     整数の手を人間が読める辞書形式にデコードする。
     表示や Web API のレスポンスで使用する。
     """
-    if move < 144:  # 盤上の手
+    if move < DROP_OFFSET:  # 盤上の手
         from_idx = move // 12
         to_idx = move % 12
         return {
@@ -61,7 +66,7 @@ def decode_move(move: int) -> dict:
             "to": (to_idx // COLS, to_idx % COLS),
         }
     else:  # 打ち手
-        remainder = move - 144
+        remainder = move - DROP_OFFSET
         pt_index = remainder // 12
         to_idx = remainder % 12
         return {
@@ -131,7 +136,7 @@ def apply_move(board: Board, player: Player, move: int) -> Board:
     手を適用して新しい盤面を返す。
     整数の手を見て盤上の手か打ち手かを判別する。
     """
-    if move < 144:
+    if move < DROP_OFFSET:
         return _apply_board_move(board, player, move)
     else:
         return _apply_drop_move(board, player, move)
@@ -177,7 +182,7 @@ def _apply_drop_move(board: Board, player: Player, move: int) -> Board:
 
     持ち駒打ちを適用する（持ち駒を盤上に置く）。
     """
-    remainder = move - 144
+    remainder = move - DROP_OFFSET
     pt_index = remainder // 12
     to_idx = remainder % 12
 

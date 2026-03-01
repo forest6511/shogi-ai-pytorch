@@ -11,9 +11,14 @@ from dataclasses import dataclass, field
 import torch
 
 from shogi_ai.game.animal_shogi.board import Board
-from shogi_ai.game.animal_shogi.moves import ACTION_SPACE
+from shogi_ai.game.animal_shogi.moves import ACTION_SPACE, DROP_OFFSET
 from shogi_ai.game.animal_shogi.moves import apply_move as _apply_move
 from shogi_ai.game.animal_shogi.moves import legal_moves as _legal_moves
+
+# テンソルチャンネルインデックス（to_tensor_planes で使用）
+_OPP_PIECE_CH = 5   # 相手駒チャンネルの開始インデックス（ch.5〜9）
+_HAND_CH = 10       # 持ち駒チャンネルの開始インデックス（ch.10〜12）
+_TURN_CH = 13       # 手番インジケータチャンネル
 from shogi_ai.game.animal_shogi.types import (
     COLS,
     HAND_PIECE_TYPES,
@@ -127,17 +132,17 @@ class AnimalShogiState:
             if piece.owner == cp:
                 planes[piece.piece_type.value, r, c] = 1.0  # 自分の駒
             else:
-                planes[5 + piece.piece_type.value, r, c] = 1.0  # 相手の駒
+                planes[_OPP_PIECE_CH + piece.piece_type.value, r, c] = 1.0  # 相手の駒
 
         # 現プレイヤーの持ち駒数をチャンネルに記録
         for i, pt in enumerate(HAND_PIECE_TYPES):
             count = self.board.hands[cp.value].count(pt)
             if count > 0:
-                planes[10 + i, :, :] = float(count)  # 全マスに枚数を設定
+                planes[_HAND_CH + i, :, :] = float(count)  # 全マスに枚数を設定
 
         # 手番インジケータ（先手番なら全マス1.0）
         if cp == Player.SENTE:
-            planes[13, :, :] = 1.0
+            planes[_TURN_CH, :, :] = 1.0
 
         return planes
 
@@ -149,7 +154,7 @@ class AnimalShogiState:
         """
         moves = _legal_moves(self.board, player)
         for move in moves:
-            if move < 144:  # 盤上の手のみ（持ち駒打ちはライオンを取れない）
+            if move < DROP_OFFSET:  # 盤上の手のみ（持ち駒打ちはライオンを取れない）
                 to_idx = move % 12
                 if to_idx == lion_idx:
                     return True
