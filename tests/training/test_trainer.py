@@ -29,7 +29,9 @@ class TestTrainer:
         net = _make_network()
         device = torch.device("cpu")
         trainer = Trainer(
-            net, TrainerConfig(epochs_per_generation=5, batch_size=8), device,
+            net,
+            TrainerConfig(epochs_per_generation=5, batch_size=8),
+            device,
         )
 
         # Create simple training data
@@ -95,7 +97,9 @@ class TestIntegration:
 
         # Train
         trainer = Trainer(
-            net, TrainerConfig(epochs_per_generation=3, batch_size=16), device,
+            net,
+            TrainerConfig(epochs_per_generation=3, batch_size=16),
+            device,
         )
         losses = trainer.train(examples)
         assert losses["total_loss"] > 0

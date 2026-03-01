@@ -102,7 +102,9 @@ def _pseudo_legal_moves(board: Board, player: Player) -> list[int]:
 
 
 def _generate_board_moves(
-    board: Board, player: Player, moves: list[int],
+    board: Board,
+    player: Player,
+    moves: list[int],
 ) -> None:
     """Generate board moves (step, slide, knight)."""
     for idx in range(NUM_SQUARES):
@@ -124,7 +126,13 @@ def _generate_board_moves(
                     if target is None or target.owner != player:
                         to_idx = nr * COLS + nc
                         _add_move_with_promotion(
-                            moves, idx, to_idx, pt, player, row, nr,
+                            moves,
+                            idx,
+                            to_idx,
+                            pt,
+                            player,
+                            row,
+                            nr,
                         )
 
         # Knight moves
@@ -138,7 +146,13 @@ def _generate_board_moves(
                     if target is None or target.owner != player:
                         to_idx = nr * COLS + nc
                         _add_move_with_promotion(
-                            moves, idx, to_idx, pt, player, row, nr,
+                            moves,
+                            idx,
+                            to_idx,
+                            pt,
+                            player,
+                            row,
+                            nr,
                         )
 
         # Slide moves
@@ -153,7 +167,13 @@ def _generate_board_moves(
                         break
                     to_idx = nr * COLS + nc
                     _add_move_with_promotion(
-                        moves, idx, to_idx, pt, player, row, nr,
+                        moves,
+                        idx,
+                        to_idx,
+                        pt,
+                        player,
+                        row,
+                        nr,
                     )
                     if target is not None:
                         break  # Captured, stop sliding
@@ -196,9 +216,7 @@ def _add_move_with_promotion(
 ) -> None:
     """Add a move, possibly with promotion variants."""
     can_promote = piece_type in PROMOTION_MAP
-    in_promotion_zone = _in_promotion_zone(player, from_row) or _in_promotion_zone(
-        player, to_row
-    )
+    in_promotion_zone = _in_promotion_zone(player, from_row) or _in_promotion_zone(player, to_row)
     must_promote = _must_promote(piece_type, player, to_row)
 
     if can_promote and in_promotion_zone:
@@ -230,7 +248,9 @@ def _must_promote(piece_type: PieceType, player: Player, dest_row: int) -> bool:
 
 
 def _generate_drop_moves(
-    board: Board, player: Player, moves: list[int],
+    board: Board,
+    player: Player,
+    moves: list[int],
 ) -> None:
     """Generate drop moves with nifu (二歩) and dead-piece restrictions."""
     hand = board.hands[player.value]

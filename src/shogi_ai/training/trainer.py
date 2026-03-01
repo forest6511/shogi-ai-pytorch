@@ -16,11 +16,11 @@ from shogi_ai.training.self_play import TrainingExample
 class TrainerConfig:
     """Configuration for the training loop."""
 
-    lr: float = 1e-3              # 学習率（Adam オプティマイザ）
-    weight_decay: float = 1e-4   # L2 正則化係数（過学習防止）
-    batch_size: int = 64          # ミニバッチサイズ
+    lr: float = 1e-3  # 学習率（Adam オプティマイザ）
+    weight_decay: float = 1e-4  # L2 正則化係数（過学習防止）
+    batch_size: int = 64  # ミニバッチサイズ
     epochs_per_generation: int = 10  # 1世代あたりのエポック数
-    buffer_size: int = 10000     # リプレイバッファの最大サイズ
+    buffer_size: int = 10000  # リプレイバッファの最大サイズ
 
 
 class Trainer:
@@ -79,13 +79,15 @@ class Trainer:
 
                 # テンソルをまとめてデバイスに送る
                 states = torch.stack([ex.state_tensor for ex in batch]).to(self.device)
-                target_policies = torch.stack(
-                    [ex.policy_target for ex in batch]
-                ).to(self.device)
-                target_values = torch.tensor(
-                    [ex.value_target for ex in batch],
-                    dtype=torch.float32,
-                ).unsqueeze(1).to(self.device)
+                target_policies = torch.stack([ex.policy_target for ex in batch]).to(self.device)
+                target_values = (
+                    torch.tensor(
+                        [ex.value_target for ex in batch],
+                        dtype=torch.float32,
+                    )
+                    .unsqueeze(1)
+                    .to(self.device)
+                )
 
                 # 順伝播（フォワードパス）
                 policy_logits, values = self.network(states)
@@ -103,8 +105,8 @@ class Trainer:
 
                 # 逆伝播と重み更新
                 self.optimizer.zero_grad()  # 勾配をリセット
-                loss.backward()             # 逆伝播で勾配計算
-                self.optimizer.step()       # オプティマイザで重み更新
+                loss.backward()  # 逆伝播で勾配計算
+                self.optimizer.step()  # オプティマイザで重み更新
 
                 total_policy_loss += policy_loss.item()
                 total_value_loss += value_loss.item()

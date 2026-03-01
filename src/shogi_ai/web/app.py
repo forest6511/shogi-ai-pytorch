@@ -49,19 +49,20 @@ _games: dict[str, dict[str, Any]] = {}
 class NewGameRequest(BaseModel):
     """新規対局リクエストのスキーマ。"""
 
-    game_type: str = "animal"   # "animal"（どうぶつしょうぎ）or "full"（本将棋）
-    ai_type: str = "minimax"    # "minimax", "random", "mcts"
+    game_type: str = "animal"  # "animal"（どうぶつしょうぎ）or "full"（本将棋）
+    ai_type: str = "minimax"  # "minimax", "random", "mcts"
 
 
 class MoveRequest(BaseModel):
     """指し手リクエストのスキーマ。"""
 
     game_id: str  # 対局ID（/api/new-game で取得）
-    move: int     # 手のエンコード値（整数）
+    move: int  # 手のエンコード値（整数）
 
 
 def _get_ai_fn(
-    ai_type: str, game_type: str,
+    ai_type: str,
+    game_type: str,
 ) -> Any:
     """Get the AI move function based on type.
 
@@ -108,11 +109,13 @@ def _state_to_dict(state: GameState, game_type: str) -> dict[str, Any]:
             if piece is None:
                 squares.append(None)
             else:
-                squares.append({
-                    "type": piece.piece_type.value,   # 駒種インデックス
-                    "owner": piece.owner.value,        # 所有者（0=先手, 1=後手）
-                    "name": piece.piece_type.name,     # 駒名（文字列）
-                })
+                squares.append(
+                    {
+                        "type": piece.piece_type.value,  # 駒種インデックス
+                        "owner": piece.owner.value,  # 所有者（0=先手, 1=後手）
+                        "name": piece.piece_type.name,  # 駒名（文字列）
+                    }
+                )
         hands = [
             [pt.name for pt in board.hands[0]],  # 先手の持ち駒
             [pt.name for pt in board.hands[1]],  # 後手の持ち駒
@@ -125,11 +128,13 @@ def _state_to_dict(state: GameState, game_type: str) -> dict[str, Any]:
             if piece is None:
                 squares.append(None)
             else:
-                squares.append({
-                    "type": piece.piece_type.value,
-                    "owner": piece.owner.value,
-                    "name": piece.piece_type.name,
-                })
+                squares.append(
+                    {
+                        "type": piece.piece_type.value,
+                        "owner": piece.owner.value,
+                        "name": piece.piece_type.name,
+                    }
+                )
         hands = [
             [pt.name for pt in board.hands[0]],
             [pt.name for pt in board.hands[1]],
@@ -137,15 +142,15 @@ def _state_to_dict(state: GameState, game_type: str) -> dict[str, Any]:
         rows, cols = 9, 9
 
     return {
-        "current_player": state.current_player,   # 手番（0=先手, 1=後手）
-        "is_terminal": state.is_terminal,          # 終局フラグ
-        "winner": state.winner,                    # 勝者（None=対局中）
-        "legal_moves": state.legal_moves(),        # 合法手リスト
-        "squares": squares,                        # 盤面の駒情報（81または12要素）
-        "hands": hands,                            # 持ち駒情報
+        "current_player": state.current_player,  # 手番（0=先手, 1=後手）
+        "is_terminal": state.is_terminal,  # 終局フラグ
+        "winner": state.winner,  # 勝者（None=対局中）
+        "legal_moves": state.legal_moves(),  # 合法手リスト
+        "squares": squares,  # 盤面の駒情報（81または12要素）
+        "hands": hands,  # 持ち駒情報
         "rows": rows,
         "cols": cols,
-        "board_display": board_display,            # テキスト形式の盤面表示
+        "board_display": board_display,  # テキスト形式の盤面表示
     }
 
 

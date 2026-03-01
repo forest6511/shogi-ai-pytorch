@@ -27,10 +27,10 @@ class ResBlock(nn.Module):
         self.bn2 = nn.BatchNorm2d(channels)
 
     def forward(self, x: Tensor) -> Tensor:
-        residual = x                            # スキップ接続用に入力を保存
+        residual = x  # スキップ接続用に入力を保存
         out = torch.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-        out = torch.relu(out + residual)        # スキップ接続: 入力を加算してからReLU
+        out = torch.relu(out + residual)  # スキップ接続: 入力を加算してからReLU
         return out
 
 
@@ -62,7 +62,11 @@ class DualHeadNetwork(nn.Module):
 
         # 入力射影: チャンネル数を in_channels → num_channels に変換
         self.input_conv = nn.Conv2d(
-            config.in_channels, config.num_channels, 3, padding=1, bias=False,
+            config.in_channels,
+            config.num_channels,
+            3,
+            padding=1,
+            bias=False,
         )
         self.input_bn = nn.BatchNorm2d(config.num_channels)
 
@@ -76,7 +80,8 @@ class DualHeadNetwork(nn.Module):
         self.policy_conv = nn.Conv2d(config.num_channels, 2, 1, bias=False)
         self.policy_bn = nn.BatchNorm2d(2)
         self.policy_fc = nn.Linear(
-            2 * config.board_h * config.board_w, config.action_size,
+            2 * config.board_h * config.board_w,
+            config.action_size,
         )
 
         # 価値ヘッド: 局面の勝率を -1〜+1 で出力
@@ -94,11 +99,11 @@ class DualHeadNetwork(nn.Module):
         # 方策ヘッド
         p = torch.relu(self.policy_bn(self.policy_conv(x)))
         p = p.view(p.size(0), -1)  # フラット化: (batch, 2*h*w)
-        p = self.policy_fc(p)       # ロジット: (batch, action_size)
+        p = self.policy_fc(p)  # ロジット: (batch, action_size)
 
         # 価値ヘッド
         v = torch.relu(self.value_bn(self.value_conv(x)))
-        v = v.view(v.size(0), -1)   # フラット化: (batch, h*w)
+        v = v.view(v.size(0), -1)  # フラット化: (batch, h*w)
         v = torch.relu(self.value_fc1(v))
         v = torch.tanh(self.value_fc2(v))  # tanh で [-1, +1] に収める
 

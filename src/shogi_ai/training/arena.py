@@ -54,7 +54,7 @@ def pit(
         while not state.is_terminal and move_count < max_moves:
             if state.current_player == 0:  # 先手（SENTE）の番
                 move = sente_fn(state)
-            else:                          # 後手（GOTE）の番
+            else:  # 後手（GOTE）の番
                 move = gote_fn(state)
             state = state.apply_move(move)
             move_count += 1

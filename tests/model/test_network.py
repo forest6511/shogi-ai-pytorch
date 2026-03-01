@@ -85,8 +85,12 @@ class TestNetworkConfig:
 
     def test_custom_config(self) -> None:
         cfg = NetworkConfig(
-            board_h=5, board_w=5, in_channels=10,
-            action_size=100, num_res_blocks=2, num_channels=32,
+            board_h=5,
+            board_w=5,
+            in_channels=10,
+            action_size=100,
+            num_res_blocks=2,
+            num_channels=32,
         )
         net = DualHeadNetwork(cfg)
         x = torch.randn(1, 10, 5, 5)

@@ -109,7 +109,7 @@ class FullShogiState:
                 continue
             r, c = idx // COLS, idx % COLS
             if piece.owner == cp:
-                planes[piece.piece_type.value, r, c] = 1.0       # 自分の駒
+                planes[piece.piece_type.value, r, c] = 1.0  # 自分の駒
             else:
                 planes[14 + piece.piece_type.value, r, c] = 1.0  # 相手の駒
 

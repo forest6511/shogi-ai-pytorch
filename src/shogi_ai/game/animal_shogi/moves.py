@@ -200,6 +200,6 @@ def _should_promote(piece: Piece, player: Player, dest_row: int) -> bool:
     if piece.piece_type != PieceType.CHICK:
         return False  # ひよこ以外は成れない
     if player == Player.SENTE:
-        return dest_row == 0       # 先手は row 0（盤面上端）で成る
+        return dest_row == 0  # 先手は row 0（盤面上端）で成る
     else:
         return dest_row == ROWS - 1  # 後手は row 3（盤面下端）で成る

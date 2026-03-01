@@ -43,9 +43,7 @@ class Board:
     hands: 2要素のタプル。hands[0]=先手の持ち駒、hands[1]=後手の持ち駒。
     """
 
-    squares: tuple[Piece | None, ...] = field(
-        default_factory=lambda: Board._initial_squares()
-    )
+    squares: tuple[Piece | None, ...] = field(default_factory=lambda: Board._initial_squares())
     hands: tuple[tuple[PieceType, ...], tuple[PieceType, ...]] = ((), ())
 
     @staticmethod

@@ -23,9 +23,9 @@ class TrainingExample(NamedTuple):
     value_target:  対局結果（+1=勝, -1=負, 0=引き分け）（価値の教師）
     """
 
-    state_tensor: Tensor   # (in_channels, board_h, board_w)
+    state_tensor: Tensor  # (in_channels, board_h, board_w)
     policy_target: Tensor  # (action_space_size,)
-    value_target: float    # +1 (win) / -1 (loss) / 0 (draw)
+    value_target: float  # +1 (win) / -1 (loss) / 0 (draw)
 
 
 @dataclass(frozen=True)
@@ -95,9 +95,9 @@ def play_game(
     result: list[TrainingExample] = []
     for tensor, policy, player in examples:
         if winner is None:
-            value = 0.0   # 引き分け
+            value = 0.0  # 引き分け
         elif winner == player:
-            value = 1.0   # このプレイヤーが勝った
+            value = 1.0  # このプレイヤーが勝った
         else:
             value = -1.0  # このプレイヤーが負けた
         result.append(TrainingExample(tensor, policy, value))

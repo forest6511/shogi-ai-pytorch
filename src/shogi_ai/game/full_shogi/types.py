@@ -22,7 +22,7 @@ class Player(IntEnum):
     """
 
     SENTE = 0  # 先手
-    GOTE = 1   # 後手
+    GOTE = 1  # 後手
 
     @property
     def opponent(self) -> Player:
@@ -38,20 +38,20 @@ class PieceType(IntEnum):
     0〜6: 未成駒、7: 王将、8〜13: 成り駒
     """
 
-    PAWN = 0         # 歩
-    LANCE = 1        # 香
-    KNIGHT = 2       # 桂
-    SILVER = 3       # 銀
-    GOLD = 4         # 金
-    BISHOP = 5       # 角
-    ROOK = 6         # 飛
-    KING = 7         # 玉/王
-    PRO_PAWN = 8     # と（成り歩）
-    PRO_LANCE = 9    # 成香
+    PAWN = 0  # 歩
+    LANCE = 1  # 香
+    KNIGHT = 2  # 桂
+    SILVER = 3  # 銀
+    GOLD = 4  # 金
+    BISHOP = 5  # 角
+    ROOK = 6  # 飛
+    KING = 7  # 玉/王
+    PRO_PAWN = 8  # と（成り歩）
+    PRO_LANCE = 9  # 成香
     PRO_KNIGHT = 10  # 成桂
     PRO_SILVER = 11  # 成銀
-    HORSE = 12       # 馬（成り角）
-    DRAGON = 13      # 龍（成り飛）
+    HORSE = 12  # 馬（成り角）
+    DRAGON = 13  # 龍（成り飛）
 
 
 # 成り変換テーブル: 未成駒 → 成り駒
@@ -69,8 +69,13 @@ UNPROMOTION_MAP: dict[PieceType, PieceType] = {v: k for k, v in PROMOTION_MAP.it
 
 # 持ち駒として使える駒種（未成の非玉駒、7種）
 HAND_PIECE_TYPES = [
-    PieceType.PAWN, PieceType.LANCE, PieceType.KNIGHT,
-    PieceType.SILVER, PieceType.GOLD, PieceType.BISHOP, PieceType.ROOK,
+    PieceType.PAWN,
+    PieceType.LANCE,
+    PieceType.KNIGHT,
+    PieceType.SILVER,
+    PieceType.GOLD,
+    PieceType.BISHOP,
+    PieceType.ROOK,
 ]
 
 # 1マス移動の方向定義（先手視点、前 = 行インデックス減少方向）
@@ -80,9 +85,14 @@ STEP_MOVES: dict[PieceType, list[tuple[int, int]]] = {
     PieceType.SILVER: [(-1, -1), (-1, 0), (-1, 1), (1, -1), (1, 1)],  # 銀: 前3方向+斜め後
     PieceType.GOLD: [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 0)],  # 金: 6方向
     PieceType.KING: [
-        (-1, -1), (-1, 0), (-1, 1),
-        (0, -1), (0, 1),
-        (1, -1), (1, 0), (1, 1),
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+        (0, -1),
+        (0, 1),
+        (1, -1),
+        (1, 0),
+        (1, 1),
     ],  # 王: 全8方向1マス
     # 成り駒は金と同じ動き
     PieceType.PRO_PAWN: [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 0)],
@@ -96,11 +106,11 @@ KNIGHT_MOVES: list[tuple[int, int]] = [(-2, -1), (-2, 1)]
 
 # 遠距離移動の方向定義（同方向に繰り返し移動できる）
 SLIDE_MOVES: dict[PieceType, list[tuple[int, int]]] = {
-    PieceType.LANCE: [(-1, 0)],                              # 香: 前方向のみ
-    PieceType.BISHOP: [(-1, -1), (-1, 1), (1, -1), (1, 1)], # 角: 斜め4方向
-    PieceType.ROOK: [(-1, 0), (1, 0), (0, -1), (0, 1)],     # 飛: 縦横4方向
-    PieceType.HORSE: [(-1, -1), (-1, 1), (1, -1), (1, 1)],   # 馬: 斜め遠距離（+縦横1マス）
-    PieceType.DRAGON: [(-1, 0), (1, 0), (0, -1), (0, 1)],    # 龍: 縦横遠距離（+斜め1マス）
+    PieceType.LANCE: [(-1, 0)],  # 香: 前方向のみ
+    PieceType.BISHOP: [(-1, -1), (-1, 1), (1, -1), (1, 1)],  # 角: 斜め4方向
+    PieceType.ROOK: [(-1, 0), (1, 0), (0, -1), (0, 1)],  # 飛: 縦横4方向
+    PieceType.HORSE: [(-1, -1), (-1, 1), (1, -1), (1, 1)],  # 馬: 斜め遠距離（+縦横1マス）
+    PieceType.DRAGON: [(-1, 0), (1, 0), (0, -1), (0, 1)],  # 龍: 縦横遠距離（+斜め1マス）
 }
 
 # 馬（成り角）の追加1マス移動（縦横に1マスだけ動ける）

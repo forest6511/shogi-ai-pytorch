@@ -7,11 +7,11 @@ from shogi_ai.game.protocol import GameState
 # 駒の価値テーブル（材料評価に使用）
 # ライオンに高い値を設定することで「ライオンを守る」行動を優先させる
 _PIECE_VALUES = {
-    0: 1.0,   # CHICK（ひよこ）
-    1: 3.0,   # GIRAFFE（きりん）
-    2: 3.0,   # ELEPHANT（ぞう）
-    3: 100.0, # LION（ライオン）— 圧倒的に高い値でライオン保護を最優先
-    4: 5.0,   # HEN（にわとり、成りひよこ）
+    0: 1.0,  # CHICK（ひよこ）
+    1: 3.0,  # GIRAFFE（きりん）
+    2: 3.0,  # ELEPHANT（ぞう）
+    3: 100.0,  # LION（ライオン）— 圧倒的に高い値でライオン保護を最優先
+    4: 5.0,  # HEN（にわとり、成りひよこ）
 }
 
 
@@ -30,8 +30,8 @@ def evaluate(state: GameState) -> float:
         if state.winner is None:
             return 0.0  # 引き分け
         if state.winner == state.current_player:
-            return 1000.0   # 勝ち
-        return -1000.0      # 負け
+            return 1000.0  # 勝ち
+        return -1000.0  # 負け
 
     # 盤上の駒を数えて材料差を計算
     # 現在のプレイヤーの駒は +値、相手の駒は -値

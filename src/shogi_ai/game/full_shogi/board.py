@@ -39,9 +39,7 @@ class Board:
     hands: 2要素のタプル。hands[0]=先手の持ち駒、hands[1]=後手の持ち駒。
     """
 
-    squares: tuple[Piece | None, ...] = field(
-        default_factory=lambda: Board._initial_squares()
-    )
+    squares: tuple[Piece | None, ...] = field(default_factory=lambda: Board._initial_squares())
     hands: tuple[tuple[PieceType, ...], tuple[PieceType, ...]] = ((), ())
 
     @staticmethod
@@ -57,15 +55,21 @@ class Board:
 
         # 後手の後段（Row 0）: 香桂銀金王金銀桂香
         gote_back = [
-            PieceType.LANCE, PieceType.KNIGHT, PieceType.SILVER,
-            PieceType.GOLD, PieceType.KING, PieceType.GOLD,
-            PieceType.SILVER, PieceType.KNIGHT, PieceType.LANCE,
+            PieceType.LANCE,
+            PieceType.KNIGHT,
+            PieceType.SILVER,
+            PieceType.GOLD,
+            PieceType.KING,
+            PieceType.GOLD,
+            PieceType.SILVER,
+            PieceType.KNIGHT,
+            PieceType.LANCE,
         ]
         for c, pt in enumerate(gote_back):
             squares[0 * COLS + c] = Piece(pt, Player.GOTE)
 
         # Row 1: 後手の飛角（飛車=右、角行=左に配置）
-        squares[1 * COLS + 1] = Piece(PieceType.ROOK, Player.GOTE)    # 飛車
+        squares[1 * COLS + 1] = Piece(PieceType.ROOK, Player.GOTE)  # 飛車
         squares[1 * COLS + 7] = Piece(PieceType.BISHOP, Player.GOTE)  # 角行
 
         # Row 2: 後手の歩兵（9枚）
@@ -78,13 +82,19 @@ class Board:
 
         # Row 7: 先手の飛角（後手と鏡像）
         squares[7 * COLS + 1] = Piece(PieceType.BISHOP, Player.SENTE)  # 角行
-        squares[7 * COLS + 7] = Piece(PieceType.ROOK, Player.SENTE)    # 飛車
+        squares[7 * COLS + 7] = Piece(PieceType.ROOK, Player.SENTE)  # 飛車
 
         # 先手の後段（Row 8）: 香桂銀金王金銀桂香
         sente_back = [
-            PieceType.LANCE, PieceType.KNIGHT, PieceType.SILVER,
-            PieceType.GOLD, PieceType.KING, PieceType.GOLD,
-            PieceType.SILVER, PieceType.KNIGHT, PieceType.LANCE,
+            PieceType.LANCE,
+            PieceType.KNIGHT,
+            PieceType.SILVER,
+            PieceType.GOLD,
+            PieceType.KING,
+            PieceType.GOLD,
+            PieceType.SILVER,
+            PieceType.KNIGHT,
+            PieceType.LANCE,
         ]
         for c, pt in enumerate(sente_back):
             squares[8 * COLS + c] = Piece(pt, Player.SENTE)
@@ -131,11 +141,7 @@ class Board:
         チェック判定や終局判定に使用する。
         """
         for idx, piece in enumerate(self.squares):
-            if (
-                piece is not None
-                and piece.piece_type == PieceType.KING
-                and piece.owner == player
-            ):
+            if piece is not None and piece.piece_type == PieceType.KING and piece.owner == player:
                 return idx
         return None
 

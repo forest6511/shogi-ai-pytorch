@@ -10,11 +10,11 @@ from shogi_ai.game.animal_shogi.types import COLS, ROWS, PieceType, Player
 
 # 駒の表示文字: 大文字=先手、小文字=後手
 PIECE_CHARS: dict[PieceType, str] = {
-    PieceType.CHICK: "C",     # ひよこ
-    PieceType.GIRAFFE: "G",   # きりん
+    PieceType.CHICK: "C",  # ひよこ
+    PieceType.GIRAFFE: "G",  # きりん
     PieceType.ELEPHANT: "E",  # ぞう
-    PieceType.LION: "L",      # ライオン
-    PieceType.HEN: "H",       # にわとり（成りひよこ）
+    PieceType.LION: "L",  # ライオン
+    PieceType.HEN: "H",  # にわとり（成りひよこ）
 }
 
 # 日本語の駒名（CLI や Web UI の表示に使用）
@@ -35,7 +35,7 @@ def piece_to_char(piece_type: PieceType, owner: Player) -> str:
     char = PIECE_CHARS[piece_type]
     if owner == Player.GOTE:
         return char.lower()  # 後手の駒は小文字
-    return char               # 先手の駒は大文字
+    return char  # 先手の駒は大文字
 
 
 def hand_to_str(hand: tuple[PieceType, ...]) -> str:

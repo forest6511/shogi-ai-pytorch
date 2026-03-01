@@ -40,7 +40,7 @@ ANIMAL_SHOGI_CONFIG = NetworkConfig(
     board_w=3,
     in_channels=14,
     action_size=180,
-    num_res_blocks=3,   # 小さいゲームなので浅いネットワーク
+    num_res_blocks=3,  # 小さいゲームなので浅いネットワーク
     num_channels=64,
 )
 
@@ -52,7 +52,7 @@ FULL_SHOGI_CONFIG = NetworkConfig(
     board_h=9,
     board_w=9,
     in_channels=43,
-    action_size=2187,   # 3^7 = 2187（簡略化した行動空間）
-    num_res_blocks=5,   # 大きいゲームなので深いネットワーク
+    action_size=2187,  # 3^7 = 2187（簡略化した行動空間）
+    num_res_blocks=5,  # 大きいゲームなので深いネットワーク
     num_channels=128,
 )

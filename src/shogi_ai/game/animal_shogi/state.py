@@ -36,7 +36,7 @@ class AnimalShogiState:
 
     board: Board = field(default_factory=Board)
     _current_player: Player = Player.SENTE  # 先手から開始
-    _move_count: int = 0                    # 手数（記録用）
+    _move_count: int = 0  # 手数（記録用）
 
     @property
     def action_space_size(self) -> int:
@@ -125,9 +125,9 @@ class AnimalShogiState:
                 continue
             r, c = idx // COLS, idx % COLS
             if piece.owner == cp:
-                planes[piece.piece_type.value, r, c] = 1.0       # 自分の駒
+                planes[piece.piece_type.value, r, c] = 1.0  # 自分の駒
             else:
-                planes[5 + piece.piece_type.value, r, c] = 1.0   # 相手の駒
+                planes[5 + piece.piece_type.value, r, c] = 1.0  # 相手の駒
 
         # 現プレイヤーの持ち駒数をチャンネルに記録
         for i, pt in enumerate(HAND_PIECE_TYPES):

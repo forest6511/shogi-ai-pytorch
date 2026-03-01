@@ -59,6 +59,7 @@ class TestNegamax:
         assert score > 50
         # The move should capture the lion
         from shogi_ai.game.animal_shogi.moves import decode_move
+
         decoded = decode_move(move)
         assert decoded["to"] == (0, 1)  # Gote's lion position
 
@@ -96,6 +97,7 @@ class TestMinimaxMove:
 
         move = minimax_move(state, depth=1)
         from shogi_ai.game.animal_shogi.moves import decode_move
+
         decoded = decode_move(move)
         assert decoded["to"] == (0, 1)
 

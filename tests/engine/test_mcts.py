@@ -59,6 +59,7 @@ class TestMCTSSearch:
 
         # The winning move (giraffe captures lion)
         from shogi_ai.game.animal_shogi.moves import encode_board_move
+
         winning_move = encode_board_move(1 * COLS + 1, 0 * COLS + 1)
         assert probs[winning_move] > 0.5
 

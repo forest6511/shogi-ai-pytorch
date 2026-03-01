@@ -44,11 +44,11 @@ class MCTSNode:
 class MCTSConfig:
     """Configuration for MCTS search."""
 
-    num_simulations: int = 50       # 1手あたりのシミュレーション回数
-    c_puct: float = 1.4             # 探索と活用のバランス係数（大きいほど探索重視）
-    temperature: float = 1.0        # 行動選択の温度（高いほど探索的）
-    dirichlet_alpha: float = 0.3    # ディリクレノイズの集中度パラメータ
-    dirichlet_epsilon: float = 0.25 # ノイズの混合率（25%をノイズに）
+    num_simulations: int = 50  # 1手あたりのシミュレーション回数
+    c_puct: float = 1.4  # 探索と活用のバランス係数（大きいほど探索重視）
+    temperature: float = 1.0  # 行動選択の温度（高いほど探索的）
+    dirichlet_alpha: float = 0.3  # ディリクレノイズの集中度パラメータ
+    dirichlet_epsilon: float = 0.25  # ノイズの混合率（25%をノイズに）
 
 
 class MCTS:
@@ -176,9 +176,8 @@ class MCTS:
 
         for move, child in node.children.items():
             # PUCT スコア = 活用（Q値）+ 探索ボーナス
-            puct = (
-                child.q_value
-                + self.config.c_puct * child.prior * sqrt_parent / (1 + child.visit_count)
+            puct = child.q_value + self.config.c_puct * child.prior * sqrt_parent / (
+                1 + child.visit_count
             )
             if puct > best_score:
                 best_score = puct
@@ -218,7 +217,9 @@ class MCTS:
         return probs, value
 
     def _add_dirichlet_noise(
-        self, root: MCTSNode, legal_moves: list[int],
+        self,
+        root: MCTSNode,
+        legal_moves: list[int],
     ) -> None:
         """Add Dirichlet noise to root priors for exploration.
 
@@ -228,9 +229,13 @@ class MCTS:
         混合: new_prior = (1 - ε) * P(s,a) + ε * noise
         ε=0.25 → 事前確率の25%をランダムノイズに置き換える
         """
-        noise = torch.distributions.Dirichlet(
-            torch.full((len(legal_moves),), self.config.dirichlet_alpha)
-        ).sample().tolist()
+        noise = (
+            torch.distributions.Dirichlet(
+                torch.full((len(legal_moves),), self.config.dirichlet_alpha)
+            )
+            .sample()
+            .tolist()
+        )
 
         eps = self.config.dirichlet_epsilon
         for i, move in enumerate(legal_moves):
