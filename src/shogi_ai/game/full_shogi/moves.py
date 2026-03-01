@@ -251,6 +251,8 @@ def _generate_drop_moves(
     board: Board,
     player: Player,
     moves: list[int],
+    *,
+    _skip_uchifuzume: bool = False,
 ) -> None:
     """Generate drop moves with nifu (二歩) and dead-piece restrictions."""
     hand = board.hands[player.value]
@@ -281,6 +283,25 @@ def _generate_drop_moves(
                     continue
                 if player == Player.GOTE and row >= 7:
                     continue
+
+            # 打ち歩詰め: Cannot drop pawn to deliver checkmate
+            # ① 安価な王手チェック（_is_in_checkを流用）
+            # ② 王手の場合のみ相手の応手を列挙（高コスト・頻度は低い）
+            # ③ _skip_uchifuzume=True で無限再帰を防ぐ（相手の打ち駒生成時はスキップ）
+            if pt == PieceType.PAWN and not _skip_uchifuzume:
+                opponent = player.opponent
+                test_board = _apply_drop(board, player, encode_drop_move(pt, idx))
+                if _is_in_check(test_board, opponent):
+                    opp_moves: list[int] = []
+                    _generate_board_moves(test_board, opponent, opp_moves)
+                    _generate_drop_moves(test_board, opponent, opp_moves, _skip_uchifuzume=True)
+                    # 全応手で王手が解消できない → 詰み → 打ち歩詰め → 違法
+                    is_checkmate = len(opp_moves) == 0 or all(
+                        _is_in_check(apply_move(test_board, opponent, m), opponent)
+                        for m in opp_moves
+                    )
+                    if is_checkmate:
+                        continue
 
             moves.append(encode_drop_move(pt, idx))
 

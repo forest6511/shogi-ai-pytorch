@@ -14,17 +14,17 @@ from shogi_ai.game.animal_shogi.board import Board
 from shogi_ai.game.animal_shogi.moves import ACTION_SPACE, DROP_OFFSET
 from shogi_ai.game.animal_shogi.moves import apply_move as _apply_move
 from shogi_ai.game.animal_shogi.moves import legal_moves as _legal_moves
-
-# テンソルチャンネルインデックス（to_tensor_planes で使用）
-_OPP_PIECE_CH = 5   # 相手駒チャンネルの開始インデックス（ch.5〜9）
-_HAND_CH = 10       # 持ち駒チャンネルの開始インデックス（ch.10〜12）
-_TURN_CH = 13       # 手番インジケータチャンネル
 from shogi_ai.game.animal_shogi.types import (
     COLS,
     HAND_PIECE_TYPES,
     ROWS,
     Player,
 )
+
+# テンソルチャンネルインデックス（to_tensor_planes で使用）
+_OPP_PIECE_CH = 5  # 相手駒チャンネルの開始インデックス（ch.5〜9）
+_HAND_CH = 10  # 持ち駒チャンネルの開始インデックス（ch.10〜12）
+_TURN_CH = 13  # 手番インジケータチャンネル
 
 
 @dataclass(frozen=True)  # イミュータブル: apply_move() は新しいオブジェクトを返す
