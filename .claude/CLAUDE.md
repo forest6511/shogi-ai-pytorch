@@ -107,3 +107,28 @@ uv run ruff check src/ tests/ # Lint
 |-------|------|------|
 | Phase 5 | `action_space_size: int` プロパティ追加 | NN 出力サイズに必要 |
 | Phase 8 | 変更なし（Config で対応） | `DualHeadNetwork` は Config で board_h/w/action_size を受ける |
+
+## 利用可能なスキル
+
+Claude Code でリポジトリを開くと以下のスキルが使えます。
+
+| スキル | 呼び出し方 | 内容 |
+|--------|-----------|------|
+| `implement` | `/implement 4` | 章コードをTDDで実装（explorer エージェントと連携） |
+| `verify` | `/verify` | ruff・mypy・pytest で完了検証 |
+| `test-e2e` | `/test-e2e` | Playwright MCPでWeb UIを実対局テスト |
+| `debug` | `/debug` | エラー診断と修正方針の提示 |
+
+### 標準的な使い方
+
+```
+/implement 4   # 第4章のコードを実装する
+/verify        # 実装完了を検証する
+/implement 7   # 第7章へ進む
+...
+/test-e2e      # 第15章完了後にWeb UIをテストする
+```
+
+### 利用可能なエージェント
+
+- **explorer**: コード調査専門。`implement` から自動で委譲される。`/agents` で確認できる。
