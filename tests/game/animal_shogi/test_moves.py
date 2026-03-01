@@ -150,3 +150,60 @@ class TestGoteMovement:
         # Gote's chick at (1,1) should be able to move to (2,1)
         chick_advance = encode_board_move(1 * COLS + 1, 2 * COLS + 1)
         assert chick_advance in moves
+
+
+class TestMoveEncodingBoundary:
+    """手エンコードの境界値テスト。"""
+
+    def test_board_move_minimum_index(self) -> None:
+        """最小インデックス (0, 0) → (0, 1) のエンコード/デコード。"""
+        move = encode_board_move(0, 1)
+        info = decode_move(move)
+        assert info["type"] == "board"
+        assert info["from"] == (0, 0)
+        assert info["to"] == (0, 1)
+
+    def test_board_move_maximum_index(self) -> None:
+        """最大インデックス (11, 10) のエンコード/デコード（142が最大値）。"""
+        move = encode_board_move(11, 10)
+        assert move == 142  # 11*12 + 10 = 132 + 10 = 142
+        info = decode_move(move)
+        assert info["type"] == "board"
+
+    def test_drop_move_boundary_first_type(self) -> None:
+        """打ち駒の最小値（ひよこを盤面インデックス0に打つ）= 144。"""
+        from shogi_ai.game.animal_shogi.moves import DROP_OFFSET
+
+        move = encode_drop_move(PieceType.CHICK, 0)
+        assert move == DROP_OFFSET  # = 144
+        info = decode_move(move)
+        assert info["type"] == "drop"
+        assert info["piece_type"] == PieceType.CHICK
+        assert info["to"] == (0, 0)
+
+    def test_drop_move_maximum_value(self) -> None:
+        """打ち駒の最大値（ぞうを盤面インデックス11に打つ）= 179。"""
+        from shogi_ai.game.animal_shogi.moves import DROP_OFFSET
+
+        move = encode_drop_move(PieceType.ELEPHANT, 11)
+        assert move == DROP_OFFSET + 2 * 12 + 11  # = 144 + 24 + 11 = 179
+        info = decode_move(move)
+        assert info["type"] == "drop"
+        assert info["piece_type"] == PieceType.ELEPHANT
+
+    def test_drop_move_threshold_boundary(self) -> None:
+        """DROP_OFFSET - 1 は盤上の手、DROP_OFFSET は打ち駒と判定される。"""
+        from shogi_ai.game.animal_shogi.moves import DROP_OFFSET
+
+        board_move_info = decode_move(DROP_OFFSET - 1)
+        assert board_move_info["type"] == "board"
+
+        drop_move_info = decode_move(DROP_OFFSET)
+        assert drop_move_info["type"] == "drop"
+
+    def test_all_drop_types_roundtrip(self) -> None:
+        """打てる3駒種（ひよこ・きりん・ぞう）すべてがラウンドトリップできる。"""
+        for pt in [PieceType.CHICK, PieceType.GIRAFFE, PieceType.ELEPHANT]:
+            move = encode_drop_move(pt, 6)
+            info = decode_move(move)
+            assert info["piece_type"] == pt
