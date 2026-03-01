@@ -37,14 +37,25 @@ let selectedHandPiece = null;
 let lastAiFrom = -1;
 let lastAiTo = -1;
 
+// 観戦モード（AI vs AI）
+let isSenteAI = false;
+let autoPlayTimer = null;
+let autoPlaySpeed = 600;  // ms/手
+let isAutoPlayRunning = false;
+
 async function newGame() {
+    // 進行中の観戦を停止してから新規開始
+    stopAutoPlay();
+
     gameType = document.getElementById('game-type').value;
     const aiType = document.getElementById('ai-type').value;
+    const senteType = document.getElementById('sente-type').value;
+    isSenteAI = senteType !== 'human';
 
     const res = await fetch('/api/new-game', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game_type: gameType, ai_type: aiType }),
+        body: JSON.stringify({ game_type: gameType, ai_type: aiType, sente_type: senteType }),
     });
     const data = await res.json();
     gameId = data.game_id;
@@ -54,7 +65,31 @@ async function newGame() {
     lastAiFrom = -1;
     lastAiTo = -1;
     document.getElementById('move-list').innerHTML = '';
-    render();
+
+    const autoControls = document.getElementById('auto-play-controls');
+    if (isSenteAI) {
+        // AI vs AI: 観戦モードを表示して自動再生を開始
+        autoControls.style.display = '';
+        render();
+        startAutoPlay();
+    } else {
+        autoControls.style.display = 'none';
+        render();
+    }
+
+    updateRulesPanel(gameType);
+}
+
+function updateRulesPanel(type) {
+    const animalRules = document.getElementById('rules-animal');
+    const fullRules = document.getElementById('rules-full');
+    if (type === 'animal') {
+        animalRules.style.display = '';
+        fullRules.style.display = 'none';
+    } else {
+        animalRules.style.display = 'none';
+        fullRules.style.display = '';
+    }
 }
 
 async function makeMove(move) {
@@ -218,21 +253,26 @@ function render() {
     const statusEl = document.getElementById('status');
     if (is_terminal) {
         if (winner === 0) {
-            statusEl.textContent = 'You win!';
+            statusEl.textContent = isSenteAI ? '先手AIの勝利！' : 'You win!';
             statusEl.className = 'status win';
         } else if (winner === 1) {
-            statusEl.textContent = 'AI wins!';
+            statusEl.textContent = isSenteAI ? '後手AIの勝利！' : 'AIの勝ち！';
             statusEl.className = 'status lose';
         } else {
-            statusEl.textContent = 'Draw!';
+            statusEl.textContent = '引き分け！';
             statusEl.className = 'status';
         }
+    } else if (isSenteAI) {
+        // 観戦モード: 先手/後手どちらのAIが考えているか表示
+        const turnName = current_player === 0 ? '先手AI' : '後手AI';
+        statusEl.textContent = `${turnName} が考えています...`;
+        statusEl.className = 'status ai-turn';
     } else {
         if (current_player === 0) {
-            statusEl.textContent = '\u3042\u306A\u305F\u306E\u756A\u3067\u3059 (\u5148\u624B)';
+            statusEl.textContent = 'あなたの番です（先手）';
             statusEl.className = 'status your-turn';
         } else {
-            statusEl.textContent = 'AI\u304C\u8003\u3048\u3066\u3044\u307E\u3059...';
+            statusEl.textContent = 'AIが考えています...';
             statusEl.className = 'status ai-turn';
         }
     }
@@ -244,7 +284,9 @@ function render() {
 // --- Click handlers ---
 
 function handleCellClick(idx) {
-    if (!gameState || gameState.is_terminal || gameState.current_player !== 0) return;
+    // 観戦モード（AI vs AI）またはゲームが終了している場合は操作不可
+    if (!gameState || gameState.is_terminal || isSenteAI) return;
+    if (gameState.current_player !== 0) return;
 
     const numSquares = gameState.rows * gameState.cols;
     const { squares, legal_moves } = gameState;
@@ -389,8 +431,286 @@ function renderHand(elementId, handPieces, pieceMap, owner) {
     }
 }
 
+// ─── 観戦モード（自動対戦） ───────────────────────────────────────────────────
+
+async function autoPlayStep() {
+    if (!gameId || !isAutoPlayRunning || !gameState || gameState.is_terminal) return;
+
+    const res = await fetch(`/api/auto-move/${gameId}`, { method: 'POST' });
+    if (!res.ok) {
+        stopAutoPlay();
+        return;
+    }
+
+    const data = await res.json();
+    gameState = data.state;
+
+    // 最後に指した手をハイライト
+    const ns = gameState.rows * gameState.cols;
+    lastAiFrom = getFromIdx(data.move, ns);
+    lastAiTo = getToIdx(data.move, ns);
+
+    const moveList = document.getElementById('move-list');
+    const playerName = data.moved_by === 0 ? '先手' : '後手';
+    moveList.innerHTML += `<div>${playerName}: ${data.move_decoded}</div>`;
+    moveList.scrollTop = moveList.scrollHeight;
+
+    render();
+
+    if (!gameState.is_terminal && isAutoPlayRunning) {
+        autoPlayTimer = setTimeout(autoPlayStep, autoPlaySpeed);
+    } else {
+        isAutoPlayRunning = false;
+        updateAutoPlayButton();
+    }
+}
+
+function startAutoPlay() {
+    if (isAutoPlayRunning) return;
+    isAutoPlayRunning = true;
+    updateAutoPlayButton();
+    autoPlayStep();
+}
+
+function stopAutoPlay() {
+    isAutoPlayRunning = false;
+    if (autoPlayTimer !== null) {
+        clearTimeout(autoPlayTimer);
+        autoPlayTimer = null;
+    }
+    updateAutoPlayButton();
+}
+
+function toggleAutoPlay() {
+    if (isAutoPlayRunning) {
+        stopAutoPlay();
+    } else {
+        startAutoPlay();
+    }
+}
+
+function updateAutoPlayButton() {
+    const btn = document.getElementById('auto-play-btn');
+    if (!btn) return;
+    btn.textContent = isAutoPlayRunning ? '⏸ 一時停止' : '▶ 再生';
+}
+
+function setAutoPlaySpeed() {
+    autoPlaySpeed = parseInt(document.getElementById('auto-play-speed').value, 10);
+}
+
+// ─── タブ管理 ────────────────────────────────────────────────────────────────
+
+function showTab(name) {
+    document.getElementById('tab-game').style.display = name === 'game' ? '' : 'none';
+    document.getElementById('tab-training').style.display = name === 'training' ? '' : 'none';
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab')[name === 'game' ? 0 : 1].classList.add('active');
+}
+
+// ─── 訓練 UI ─────────────────────────────────────────────────────────────────
+
+let trainEventSource = null;
+let trainGameType = 'animal';
+
+function onTrainGameTypeChange() {
+    const gameType = document.getElementById('train-game-type').value;
+    // ゲーム種別に応じたデフォルト世代数を設定
+    document.getElementById('train-generations').value = gameType === 'animal' ? 3 : 1;
+}
+
+function addTrainLog(msg) {
+    const log = document.getElementById('train-log');
+    const line = document.createElement('div');
+    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+}
+
+function updatePhaseLabel(phase) {
+    const labels = {
+        self_play: '⏳ 自己対局中...',
+        training:  '🧠 ネットワーク訓練中...',
+        arena:     '⚔️  アリーナ対戦中...',
+    };
+    document.getElementById('train-phase-label').textContent = labels[phase] || phase;
+}
+
+function updateProgress(gen, total) {
+    const pct = total > 0 ? Math.round((gen / total) * 100) : 0;
+    document.getElementById('progress-bar').style.width = `${pct}%`;
+    document.getElementById('train-gen-label').textContent = `${gen} / ${total} 世代`;
+}
+
+async function startTraining() {
+    trainGameType = document.getElementById('train-game-type').value;
+    const numGen = parseInt(document.getElementById('train-generations').value, 10);
+
+    // 本将棋 × 多世代は非常に時間がかかるため確認ダイアログを表示
+    if (trainGameType === 'full' && numGen > 2) {
+        const hours = numGen * 4;  // 1世代あたり目安4時間
+        const ok = confirm(
+            `本将棋 × ${numGen}世代の訓練は非常に時間がかかります。\n\n` +
+            `目安: 合計 ${hours} 時間以上（環境により大きく異なります）\n\n` +
+            `途中で止める場合は「停止」ボタンを押してください。\n` +
+            `ブラウザを閉じてもサーバーが動いている限り訓練は続きます。\n\n` +
+            `続けますか？`
+        );
+        if (!ok) return;
+    }
+
+    document.getElementById('train-start-btn').disabled = true;
+    document.getElementById('train-stop-btn').disabled = false;
+    document.getElementById('train-status-bar').style.display = '';
+    document.getElementById('train-results-area').style.display = '';
+    document.getElementById('train-done-area').style.display = 'none';
+    document.getElementById('train-table-body').innerHTML = '';
+    document.getElementById('train-log').innerHTML = '';
+    updateProgress(0, numGen);
+
+    const res = await fetch('/api/train/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ game_type: trainGameType, num_generations: numGen }),
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        alert(err.detail);
+        document.getElementById('train-start-btn').disabled = false;
+        document.getElementById('train-stop-btn').disabled = true;
+        return;
+    }
+
+    addTrainLog(`訓練開始: ${trainGameType}, ${numGen}世代`);
+    listenTrainStream();
+}
+
+// SSE ストリームへの接続（startTraining と リロード後再接続 の両方から呼ぶ）
+function listenTrainStream() {
+    if (trainEventSource) trainEventSource.close();
+    trainEventSource = new EventSource('/api/train/stream');
+    trainEventSource.onmessage = (e) => {
+        const event = JSON.parse(e.data);
+        handleTrainingEvent(event);
+    };
+    trainEventSource.onerror = () => {
+        addTrainLog('接続が切れました');
+        trainEventSource.close();
+        document.getElementById('train-start-btn').disabled = false;
+        document.getElementById('train-stop-btn').disabled = true;
+    };
+}
+
+function handleTrainingEvent(event) {
+    if (event.type === 'heartbeat') return;
+
+    if (event.type === 'phase') {
+        updatePhaseLabel(event.phase);
+        if (event.phase === 'self_play') {
+            updateProgress(event.generation - 1, event.total);
+            addTrainLog(`第${event.generation}世代 開始`);
+        }
+        if (event.phase === 'training' && event.data_size) {
+            addTrainLog(`  └ 自己対局完了: ${event.data_size}局面`);
+        }
+    }
+
+    if (event.type === 'generation_done') {
+        updateProgress(event.generation, event.total);
+        document.getElementById('train-phase-label').textContent = `✓ 第${event.generation}世代 完了`;
+
+        // 世代結果を表に追加
+        const tbody = document.getElementById('train-table-body');
+        const tr = document.createElement('tr');
+        const adoptedCell = event.adopted
+            ? '<td class="adopted-yes">✓ 採用</td>'
+            : '<td class="adopted-no">✗ 見送</td>';
+        const winPct = Math.round(event.win_rate * 100);
+        tr.innerHTML = `
+            <td>${event.generation}</td>
+            <td>${event.data_size}</td>
+            <td>${event.policy_loss}</td>
+            <td>${event.value_loss}</td>
+            <td>${event.new_wins}</td>
+            <td>${event.old_wins}</td>
+            <td>${event.draws}</td>
+            <td>${winPct}%</td>
+            ${adoptedCell}
+        `;
+        tbody.appendChild(tr);
+
+        const adoptMsg = event.adopted ? '✓ 採用' : '✗ 見送り';
+        addTrainLog(
+            `  └ 結果: 損失=${event.total_loss} 勝率=${winPct}% ${adoptMsg}`
+        );
+    }
+
+    if (event.type === 'done') {
+        document.getElementById('train-phase-label').textContent = '✅ 訓練完了！';
+        document.getElementById('train-start-btn').disabled = false;
+        document.getElementById('train-stop-btn').disabled = true;
+        document.getElementById('train-done-area').style.display = '';
+        document.getElementById('train-done-msg').textContent =
+            `訓練完了！ モデルが保存されました。対局タブで MCTS AI と対戦できます。`;
+        addTrainLog('訓練完了');
+        if (trainEventSource) trainEventSource.close();
+    }
+
+    if (event.type === 'stopped') {
+        document.getElementById('train-phase-label').textContent = '⏹ 停止しました';
+        document.getElementById('train-start-btn').disabled = false;
+        document.getElementById('train-stop-btn').disabled = true;
+        addTrainLog('訓練を停止しました');
+        if (trainEventSource) trainEventSource.close();
+    }
+}
+
+async function stopTraining() {
+    await fetch('/api/train/stop', { method: 'POST' });
+    addTrainLog('停止リクエスト送信...');
+}
+
+async function loadTrainedModel() {
+    const res = await fetch('/api/train/load', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ game_type: trainGameType }),
+    });
+    if (res.ok) {
+        addTrainLog('訓練済みモデルを読み込みました');
+        // 対局タブに切り替えてゲーム種別・AI種別を設定
+        showTab('game');
+        document.getElementById('game-type').value = trainGameType;
+        document.getElementById('ai-type').value = 'mcts';
+        newGame();
+    } else {
+        const err = await res.json();
+        alert(err.detail);
+    }
+}
+
 // Auto-start
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('new-game-btn').addEventListener('click', newGame);
+    // ゲーム種別変更時に即座に盤面を切り替える
+    document.getElementById('game-type').addEventListener('change', newGame);
     newGame();
+
+    // リロード後の復帰: 訓練が進行中なら訓練タブに戻ってSSEを再接続する
+    try {
+        const res = await fetch('/api/train/status');
+        const data = await res.json();
+        if (data.running) {
+            showTab('training');
+            if (data.game_type) trainGameType = data.game_type;
+            document.getElementById('train-start-btn').disabled = true;
+            document.getElementById('train-stop-btn').disabled = false;
+            document.getElementById('train-status-bar').style.display = '';
+            document.getElementById('train-phase-label').textContent = '訓練中（再接続）...';
+            addTrainLog('ページを再読み込みしました。訓練は継続中です。停止するには「停止」ボタンを押してください。');
+            listenTrainStream();
+        }
+    } catch (_) {
+        // サーバー未起動などの場合は無視
+    }
 });

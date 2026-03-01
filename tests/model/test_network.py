@@ -71,7 +71,7 @@ class TestDualHeadNetworkFullShogi:
         net = DualHeadNetwork(FULL_SHOGI_CONFIG)
         x = torch.randn(2, 43, 9, 9)
         policy, value = net(x)
-        assert policy.shape == (2, 2187)
+        assert policy.shape == (2, 13689)  # ACTION_SPACE in full_shogi/moves.py
         assert value.shape == (2, 1)
 
 

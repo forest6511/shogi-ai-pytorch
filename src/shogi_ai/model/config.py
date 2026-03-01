@@ -46,13 +46,14 @@ ANIMAL_SHOGI_CONFIG = NetworkConfig(
 
 # 本将棋用のプリセット設定
 # 盤面: 9×9、入力: 43チャンネル（14駒種×2 + 持ち駒7種×2 + 手番1）
-# 行動空間: 2187（ニューラルネット出力サイズ、実際の手数は13689だが簡略化）
-# 注意: 実際の合法手数は13689だが、学習コストとのトレードオフで小さく設定
+# 行動空間: 13689（盤上手13122 + 打ち手567）
+# MCTSの _evaluate() が policy[m] で直接インデックスするため
+# action_size は全手エンコードの最大値以上でなければならない
 FULL_SHOGI_CONFIG = NetworkConfig(
     board_h=9,
     board_w=9,
     in_channels=43,
-    action_size=2187,  # 3^7 = 2187（簡略化した行動空間）
+    action_size=13689,  # ACTION_SPACE in full_shogi/moves.py と一致
     num_res_blocks=5,  # 大きいゲームなので深いネットワーク
     num_channels=128,
 )
