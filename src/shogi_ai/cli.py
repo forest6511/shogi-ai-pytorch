@@ -77,7 +77,7 @@ def main() -> None:
                     print(f"Invalid: choose 0-{len(moves) - 1}")
                 except ValueError:
                     print("Enter a number.")
-                except EOFError, KeyboardInterrupt:
+                except (EOFError, KeyboardInterrupt):
                     print("\nGame aborted.")
                     return
         else:
