@@ -1,11 +1,15 @@
 """Legal move generation for どうぶつしょうぎ.
 
-Move encoding (int):
-  Board moves:  from_idx * 12 + to_idx  (range 0..143)
-  Drop moves:   144 + piece_type * 12 + to_idx  (range 144..179)
-    piece_type: 0=Chick, 1=Giraffe, 2=Elephant (only 3 droppable types)
+合法手の生成と手のエンコード/デコード。
 
-  Total action space: 180
+手のエンコード（整数値への変換）:
+  盤上の手: from_idx * 12 + to_idx     (0〜143)
+    from_idx: 移動元マスのインデックス（0〜11）
+    to_idx:   移動先マスのインデックス（0〜11）
+  打ち手:   144 + piece_type * 12 + to_idx  (144〜179)
+    piece_type: 0=ひよこ, 1=きりん, 2=ぞう（打てる3種）
+
+  合計行動空間: 180
 """
 
 from __future__ import annotations
@@ -20,23 +24,35 @@ from shogi_ai.game.animal_shogi.types import (
     Player,
 )
 
-ACTION_SPACE = 180
+ACTION_SPACE = 180  # どうぶつしょうぎの全行動数
 
 
 def encode_board_move(from_idx: int, to_idx: int) -> int:
-    """Encode a board move as an integer."""
+    """Encode a board move as an integer.
+
+    盤上の手を整数にエンコードする。
+    from_idx * 12 + to_idx（12 は盤面のマス数）
+    """
     return from_idx * 12 + to_idx
 
 
 def encode_drop_move(piece_type: PieceType, to_idx: int) -> int:
-    """Encode a drop move as an integer."""
+    """Encode a drop move as an integer.
+
+    持ち駒打ちを整数にエンコードする。
+    144（盤上の手の最大値+1）以降の値を使う。
+    """
     pt_index = HAND_PIECE_TYPES.index(piece_type)
     return 144 + pt_index * 12 + to_idx
 
 
 def decode_move(move: int) -> dict:
-    """Decode a move integer into a descriptive dict."""
-    if move < 144:
+    """Decode a move integer into a descriptive dict.
+
+    整数の手を人間が読める辞書形式にデコードする。
+    表示や Web API のレスポンスで使用する。
+    """
+    if move < 144:  # 盤上の手
         from_idx = move // 12
         to_idx = move % 12
         return {
@@ -44,7 +60,7 @@ def decode_move(move: int) -> dict:
             "from": (from_idx // COLS, from_idx % COLS),
             "to": (to_idx // COLS, to_idx % COLS),
         }
-    else:
+    else:  # 打ち手
         remainder = move - 144
         pt_index = remainder // 12
         to_idx = remainder % 12
@@ -58,57 +74,63 @@ def decode_move(move: int) -> dict:
 def legal_moves(board: Board, player: Player) -> list[int]:
     """Generate all legal moves for the given player.
 
+    プレイヤーのすべての合法手を生成する。
+
     Includes:
-    - Board moves (piece movement + promotion)
-    - Drop moves (placing captured pieces)
+    - Board moves (piece movement + promotion)（盤上の手・成り）
+    - Drop moves (placing captured pieces)（持ち駒打ち）
 
     Does NOT include moves that leave own lion in check
     (lion capture is allowed as a win condition).
+    自玉が取られる手は除外しない（ライオン取りが勝利条件のため）。
     """
     moves: list[int] = []
 
-    # Board moves
+    # --- 盤上の手の生成 ---
     for idx, piece in enumerate(board.squares):
         if piece is None or piece.owner != player:
-            continue
+            continue  # 空マスまたは相手の駒はスキップ
         row, col = idx // COLS, idx % COLS
         deltas = PIECE_MOVES[piece.piece_type]
 
         for dr, dc in deltas:
-            # GOTE moves are mirrored vertically
+            # 後手（GOTE）は移動方向を縦に反転（先後対称な設計）
             if player == Player.GOTE:
                 dr = -dr
             nr, nc = row + dr, col + dc
             if not (0 <= nr < ROWS and 0 <= nc < COLS):
-                continue
+                continue  # 盤外はスキップ
             target = board.piece_at(nr, nc)
             if target is not None and target.owner == player:
-                continue  # Can't capture own piece
+                continue  # 自分の駒のある場所には動けない
 
             to_idx = nr * COLS + nc
             move = encode_board_move(idx, to_idx)
 
-            # Check if this move is promotion
+            # 成り判定（ひよこが相手陣地後段に到達 → 自動的ににわとりになる）
             if _should_promote(piece, player, nr):
-                # Promotion is mandatory for chick reaching the far rank
-                moves.append(move)
+                moves.append(move)  # どうぶつしょうぎの成りは強制・任意同一
             else:
                 moves.append(move)
 
-    # Drop moves
+    # --- 持ち駒打ちの生成 ---
     hand = board.hands[player.value]
-    unique_in_hand = set(hand)
+    unique_in_hand = set(hand)  # 同じ駒種を重複して生成しないよう集合に
     for pt in unique_in_hand:
         for idx in range(ROWS * COLS):
             if board.squares[idx] is not None:
-                continue  # Square occupied
+                continue  # 駒のあるマスには打てない
             moves.append(encode_drop_move(pt, idx))
 
     return moves
 
 
 def apply_move(board: Board, player: Player, move: int) -> Board:
-    """Apply a move and return the new board state."""
+    """Apply a move and return the new board state.
+
+    手を適用して新しい盤面を返す。
+    整数の手を見て盤上の手か打ち手かを判別する。
+    """
     if move < 144:
         return _apply_board_move(board, player, move)
     else:
@@ -116,7 +138,10 @@ def apply_move(board: Board, player: Player, move: int) -> Board:
 
 
 def _apply_board_move(board: Board, player: Player, move: int) -> Board:
-    """Apply a board move (piece movement)."""
+    """Apply a board move (piece movement).
+
+    盤上の手を適用する（駒を移動させる）。
+    """
     from_idx = move // 12
     to_idx = move % 12
     from_row, from_col = from_idx // COLS, from_idx % COLS
@@ -125,18 +150,18 @@ def _apply_board_move(board: Board, player: Player, move: int) -> Board:
     piece = board.piece_at(from_row, from_col)
     assert piece is not None, f"No piece at ({from_row}, {from_col})"
 
-    # Capture
+    # 駒を取る処理（相手の駒があれば持ち駒に加える）
     target = board.squares[to_idx]
     new_board = board
     if target is not None:
         new_board = new_board.add_to_hand(player, target.piece_type)
 
-    # Promotion check
+    # 成り判定: ひよこが相手後段に到達したらにわとりに成る
     new_piece_type = piece.piece_type
     if _should_promote(piece, player, to_row):
         new_piece_type = PieceType.HEN
 
-    # Move piece
+    # 駒を移動: 移動元を空にして、移動先に新しい駒を置く
     new_board = new_board.set_piece(from_row, from_col, None)
     new_board = new_board.set_piece(
         to_idx // COLS,
@@ -148,7 +173,10 @@ def _apply_board_move(board: Board, player: Player, move: int) -> Board:
 
 
 def _apply_drop_move(board: Board, player: Player, move: int) -> Board:
-    """Apply a drop move (placing a captured piece)."""
+    """Apply a drop move (placing a captured piece).
+
+    持ち駒打ちを適用する（持ち駒を盤上に置く）。
+    """
     remainder = move - 144
     pt_index = remainder // 12
     to_idx = remainder % 12
@@ -156,6 +184,7 @@ def _apply_drop_move(board: Board, player: Player, move: int) -> Board:
     piece_type = HAND_PIECE_TYPES[pt_index]
     to_row, to_col = to_idx // COLS, to_idx % COLS
 
+    # 持ち駒から1枚取り除いて盤上に配置
     new_board = board.remove_from_hand(player, piece_type)
     new_board = new_board.set_piece(to_row, to_col, Piece(piece_type, player))
 
@@ -163,10 +192,14 @@ def _apply_drop_move(board: Board, player: Player, move: int) -> Board:
 
 
 def _should_promote(piece: Piece, player: Player, dest_row: int) -> bool:
-    """Check if a piece should promote on reaching dest_row."""
+    """Check if a piece should promote on reaching dest_row.
+
+    駒が成るべきかどうかを判定する。
+    どうぶつしょうぎでは、ひよこが相手陣地後段に到達したら必ずにわとりになる。
+    """
     if piece.piece_type != PieceType.CHICK:
-        return False
+        return False  # ひよこ以外は成れない
     if player == Player.SENTE:
-        return dest_row == 0  # Sente promotes on row 0 (top)
+        return dest_row == 0       # 先手は row 0（盤面上端）で成る
     else:
-        return dest_row == ROWS - 1  # Gote promotes on row 3 (bottom)
+        return dest_row == ROWS - 1  # 後手は row 3（盤面下端）で成る
