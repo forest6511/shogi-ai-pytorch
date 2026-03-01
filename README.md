@@ -68,6 +68,14 @@ git diff v0.2.0..v0.3.0 --stat
 | `/debug` | エラー発生時 | ruff/mypy/pytest/MPS/将棋ルールのエラー診断 |
 | `/test-e2e` | Ch.15 完了後 | Playwright MCPでWeb UIを実対局テスト |
 
+## デモ
+
+### AI同士の対局（Minimax vs Minimax）
+
+![AI対局デモ](images/demo.gif)
+
+Minimax AI同士がどうぶつしょうぎで対局する様子。駒の取り合いから終局までの流れを確認できます。
+
 ## スクリーンショット
 
 ### どうぶつしょうぎ（3×4）の初期配置と駒の動き
