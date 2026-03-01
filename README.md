@@ -4,9 +4,10 @@
 
 ## 必要環境
 
-- Python 3.13+
+- Python 3.14+
 - macOS (Apple Silicon: M1/M2/M3/M4)
 - [uv](https://docs.astral.sh/uv/) パッケージマネージャ
+- [Claude Code](https://code.claude.com/) （スキルを使う場合）
 
 ## セットアップ
 
@@ -19,35 +20,53 @@ uv sync
 ## 実行
 
 ```bash
-# どうぶつしょうぎ対局（Human vs Random AI）
+# CUI対局（Human vs AI）
 uv run shogi-ai
+
+# Web UI で対局
+uv run shogi-ai web
+# → http://localhost:8000 をブラウザで開く
 ```
 
 ## テスト
 
 ```bash
 uv run pytest -v
+uv run ruff check src/ tests/
+uv run mypy src/
 ```
 
 ## 章・コード対応表
 
 | 章 | 内容 | Git タグ | 主要ファイル |
 |----|------|---------|-------------|
-| Ch.1 | LLMとバイブコーディング | — | — |
-| Ch.2 | 環境構築 | — | — |
-| Ch.3 | Python速習 | — | — |
-| Ch.4 | どうぶつしょうぎルール | `v0.2.0` | `src/shogi_ai/game/animal_shogi/` |
-| Ch.5 | テスト駆動開発 | `v0.2.0` | `tests/game/animal_shogi/` |
-| Ch.6 | CUI対局 | `v0.2.0` | `src/shogi_ai/cli.py` |
-| Ch.7 | ニューラルネットワーク基礎 | `v0.3.0` | — |
-| Ch.8 | PolicyNetwork | `v0.4.0` | `src/shogi_ai/model/` |
-| Ch.9 | 自己対局データ生成 | `v0.4.0` | `src/shogi_ai/training/` |
-| Ch.10 | 訓練ループ | `v0.5.0` | `src/shogi_ai/training/` |
-| Ch.11 | MCTS | `v0.6.0` | `src/shogi_ai/engine/mcts.py` |
-| Ch.12 | AlphaZeroパイプライン | `v0.7.0` | `src/shogi_ai/training/` |
-| Ch.13 | 本将棋への拡張 | `v0.8.0` | `src/shogi_ai/game/shogi/` |
-| Ch.14 | 対局分析 | `v0.9.0` | — |
-| Ch.15 | Web UI | `v1.0.0` | `src/shogi_ai/web/` |
+| Ch.1 | AIとは何か | — | — |
+| Ch.2 | Claude Codeの使い方 | — | — |
+| Ch.3 | Python環境構築 | — | — |
+| Ch.4–6 | どうぶつしょうぎエンジン | `v0.2.0` | `src/shogi_ai/game/animal_shogi/` |
+| Ch.7 | ミニマックスとアルファベータ探索 | `v0.3.0` | `src/shogi_ai/engine/minimax.py` |
+| Ch.8–9 | PyTorchニューラルネットワーク | `v0.5.0` | `src/shogi_ai/model/` |
+| Ch.10–12 | MCTS・自己対局・訓練 | `v0.6.0` | `src/shogi_ai/engine/mcts.py`, `src/shogi_ai/training/` |
+| Ch.13–14 | 本将棋（9×9）への拡張 | `v0.8.0` | `src/shogi_ai/game/shogi/` |
+| Ch.15 | Web UI | `main` | `src/shogi_ai/web/` |
+
+タグ時点のコードを参照するには:
+
+```bash
+git show v0.2.0:src/shogi_ai/game/animal_shogi/state.py
+git diff v0.2.0..v0.3.0 --stat
+```
+
+## Claude Code スキル
+
+このリポジトリをクローンして Claude Code で開くと、以下のスキルが使えます。
+
+| スキル | 使い方 | 内容 |
+|--------|--------|------|
+| `/implement 4` | 章番号を指定 | TDDサイクルで章のコードを実装 |
+| `/verify` | 実装後に実行 | ruff・mypy・pytest で完了を検証 |
+| `/debug` | エラー発生時 | ruff/mypy/pytest/MPS/将棋ルールのエラー診断 |
+| `/test-e2e` | Ch.15 完了後 | Playwright MCPでWeb UIを実対局テスト |
 
 ## ライセンス
 
