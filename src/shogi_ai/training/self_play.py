@@ -135,4 +135,4 @@ def _select_move(action_probs: list[float], legal_moves: list[int]) -> int:
     else:
         probs = probs / total  # 正規化して確率分布に
         idx = torch.multinomial(probs, 1).item()  # 確率に従ってサンプリング
-    return legal_moves[idx]
+    return legal_moves[int(idx)]

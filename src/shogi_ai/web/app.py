@@ -105,7 +105,7 @@ def _state_to_dict(state: GameState, game_type: str) -> dict[str, Any]:
 
     if game_type == "animal":
         board_display = animal_format(board)
-        squares = []
+        squares: list[dict[str, Any] | None] = []
         for piece in board.squares:
             if piece is None:
                 squares.append(None)

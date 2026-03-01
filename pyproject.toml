@@ -20,6 +20,7 @@ dev = [
     "pytest>=9.0",
     "ruff>=0.15",
     "httpx>=0.28",
+    "mypy>=1.19.1",
 ]
 
 [build-system]
@@ -41,3 +42,9 @@ target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = false
+ignore_missing_imports = true
+check_untyped_defs = true
