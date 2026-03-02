@@ -2,6 +2,8 @@
 
 「Claude Codeで作る将棋AI — PyTorch×強化学習×バイブコーディング実践入門」のコンパニオンリポジトリです。
 
+📖 **書籍はこちら**: [Claude Codeで作る将棋AI — PyTorch×強化学習×バイブコーディング実践入門](https://www.amazon.co.jp/dp/B0GQQXV8V8)
+
 ## デモ
 
 Minimax AI同士による本将棋（9×9）の対局。序盤から中盤にかけての駒の展開を確認できます。
